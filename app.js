@@ -1,0 +1,1 @@
+const q=document.getElementById('q');q?.addEventListener('input',()=>{const v=q.value.toLowerCase().trim();document.querySelectorAll('#catalogo article').forEach(x=>x.style.display=x.innerText.toLowerCase().includes(v)||x.dataset.name.includes(v)?'block':'none')});
