@@ -6,7 +6,7 @@ const ua=navigator.userAgent;
 const isIOS=/iphone|ipad|ipod/i.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 const isSafari=isIOS&&/Safari/i.test(ua)&&!/CriOS|FxiOS|EdgiOS|OPiOS/i.test(ua);
 const isStandalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
-const showInstallHelp=()=>{if(iosHelp)iosHelp.hidden=!isIOS;if(genericHelp)genericHelp.hidden=isIOS;if(help)help.hidden=false;};
+const showInstallHelp=()=>{if(iosHelp)iosHelp.hidden=!isIOS;if(genericHelp)genericHelp.hidden=isIOS;if(help)help.hidden=false;if(isIOS&&iosHelp){iosHelp.innerHTML='<div class="iphone-install"><div class="iphone-icon">F</div><h3>Instalar Forte Atacarejo</h3><p>Adicione o aplicativo à tela inicial do seu iPhone.</p><div class="iphone-step"><b>1</b><span>Toque no botão <strong>Compartilhar ⬆</strong> do Safari.</span></div><div class="iphone-step"><b>2</b><span>Toque em <strong>Adicionar à Tela de Início</strong> e depois em <strong>Adicionar</strong>.</span></div><small>O iPhone não permite que sites instalem um aplicativo automaticamente. São necessários estes passos do Safari.</small></div>';}};
 if(isStandalone){installBtn?.setAttribute('hidden','');}
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstallPrompt=e;if(!isStandalone)installBtn?.removeAttribute('hidden');});
 installBtn?.addEventListener('click',async()=>{if(deferredInstallPrompt){deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;return;}showInstallHelp();});
@@ -14,7 +14,7 @@ document.getElementById('closeInstall')?.addEventListener('click',()=>{if(help)h
 help?.addEventListener('click',e=>{if(e.target===help){help.hidden=true;try{sessionStorage.setItem('forteInstallHelpSeen','1')}catch{}}});
 window.addEventListener('appinstalled',()=>{installBtn?.setAttribute('hidden','');if(help)help.hidden=true;deferredInstallPrompt=null;});
 window.addEventListener('load',()=>{if(!isSafari||isStandalone)return;let seen=false;try{seen=sessionStorage.getItem('forteInstallHelpSeen')==='1'}catch{}if(!seen){setTimeout(()=>{showInstallHelp();try{sessionStorage.setItem('forteInstallHelpSeen','1')}catch{}},900);}});
-document.getElementById('iosShareInstall')?.addEventListener('click',async()=>{if(navigator.share){try{await navigator.share({title:'Forte Atacarejo',text:'Forte Atacarejo — Atacadista de Cimentos',url:location.origin+location.pathname});return}catch(e){if(e?.name==='AbortError')return;}}if(iosHelp)iosHelp.hidden=false;if(genericHelp)genericHelp.hidden=true;if(help)help.hidden=false;});
+
 
 const mobileMenu=document.getElementById('mobileMenu');document.getElementById('mobileMenuBtn')?.addEventListener('click',()=>{mobileMenu.hidden=false});document.getElementById('mobileMenuClose')?.addEventListener('click',()=>{mobileMenu.hidden=true});mobileMenu?.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{mobileMenu.hidden=true}));
 
