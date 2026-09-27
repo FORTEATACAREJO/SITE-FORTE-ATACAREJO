@@ -50,3 +50,61 @@
  .home-v2{min-height:1060px!important;padding:36px 24px 30px!important}
  .home-v2 .hero-message h1{font-size:39px!important}
 }
+
+/* ===== MOBILE FINAL APROVADO 27-09-2026 — NÃO REINTERPRETAR ===== */
+@media(max-width:800px){
+ body{background:#fff;color:#071d3a;padding-bottom:64px}
+ header{position:sticky!important;top:0!important;z-index:50!important;height:86px!important;padding:14px 18px!important;background:linear-gradient(90deg,#073a70,#032a55)!important;border:0!important}
+ header .brand{display:flex!important;flex-direction:column!important;justify-content:center!important}
+ header .brand strong{font-size:23px!important;font-style:italic!important;color:#fff!important;letter-spacing:.2px!important}
+ header .brand span{font-size:10px!important;letter-spacing:3px!important;color:#f2c230!important}
+ header nav,header .install-btn,header .wa{display:none!important}
+ .mobile-menu-btn{position:fixed!important;right:20px!important;top:21px!important;z-index:55!important;color:#fff!important;font-size:36px!important;background:transparent!important;border:0!important}
+ .home-v2{min-height:0!important;padding:30px 20px 24px!important;background:linear-gradient(90deg,rgba(2,30,59,.94),rgba(2,34,64,.56)),url('https://argos.co/wp-content/uploads/2024/02/Resultados_Financieros_Argos_4T2023-scaled.jpg') center/cover no-repeat!important}
+ .home-v2 .hero-message h1{font-size:38px!important;line-height:1.02!important;margin:0 0 18px!important;letter-spacing:-.7px!important}
+ .home-v2 .hero-message p{font-size:16px!important;line-height:1.35!important;margin:0!important}
+ .hero-checks{font-size:15px!important;margin:18px 0!important}
+ .hero-checks li{margin:8px 0!important}
+ .hero-checks li:before{width:25px!important;height:25px!important}
+ .home-v2 .actions{margin-top:20px!important;gap:9px!important}
+ .home-v2 .actions a{min-height:54px!important;padding:10px!important;font-size:16px!important;border-radius:8px!important}
+ .home-brands{padding:15px 12px 10px!important;background:#f6f7f9!important}
+ .home-brands h2{font-size:14px!important;letter-spacing:3px!important;margin:0 0 10px!important}
+ .brand-grid{grid-template-columns:repeat(4,1fr)!important;gap:7px!important}
+ .brand-grid div{min-height:58px!important;padding:5px!important;border-radius:8px!important}
+ .brand-grid img{max-height:36px!important;max-width:95%!important}
+ .brand-grid .brand-ical strong{font-size:22px!important}
+ .benefits{display:grid!important;grid-template-columns:repeat(3,1fr)!important;padding:8px 10px 12px!important;gap:6px!important;background:#f6f7f9!important}
+ .benefits div{min-height:90px!important;padding:10px 5px!important;background:#fff!important}
+ .benefits b{font-size:11px!important;color:#082c5c!important}
+ .benefits span{font-size:9px!important}
+ .approved-catalog{padding:18px 12px 28px!important;background:#fff!important}
+ .approved-catalog>h2{font-size:22px!important;text-align:left!important;margin:0 0 12px!important}
+ .search{padding:0 0 12px!important}
+ .search input{height:44px!important;border:1px solid #d6deea!important;border-radius:9px!important;padding:0 14px!important}
+ .catalog-group{margin:0 0 24px!important}
+ .catalog-title{display:flex!important;align-items:center!important;gap:12px!important;font-size:21px!important;color:#082c5c!important;margin:12px 0!important}
+ .catalog-title:after{content:"";height:3px;background:#d52d37;flex:1}
+ .product-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+ .product-card{border:1px solid #e0e5ec!important;border-radius:10px!important;box-shadow:0 2px 8px #001a3510!important;overflow:hidden!important}
+ .approved-visual{min-height:0!important;padding:8px!important;background:#fff!important}
+ .product-photo img{height:150px!important;width:100%!important;object-fit:contain!important;margin:0 0 6px!important}
+ .approved-visual span{font-size:12px!important;color:#d52d37!important}
+ .approved-visual b{font-size:14px!important;line-height:1.2!important}
+ .approved-visual em{font-size:13px!important}
+ .product-body{padding:8px!important;border-top:0!important}
+ .product-body .product-brand,.product-body h3,.product-body .package,.product-body p{display:none!important}
+ .product-detail-btn,.product-cta{height:38px!important;margin-top:6px!important;border-radius:6px!important;font-size:10px!important;display:flex!important;align-items:center!important;justify-content:center!important}
+ .product-cta{background:#0758b5!important;color:#fff!important}
+ .solutions-title,.solutions-row{display:none!important}
+ .story,#atendimento{padding:24px 18px!important}
+ .mobile-menu{background:#001a35!important}
+ .mobile-menu-panel{width:100%!important;background:linear-gradient(180deg,#073b70,#03294f)!important;color:#fff!important}
+ .mobile-menu-panel strong,.mobile-menu-panel a,.mobile-menu-panel .install-close{color:#fff!important}
+ .mobile-bottom-nav{height:64px!important;box-shadow:0 -2px 10px #001a3512!important}
+ .mobile-bottom-nav a{font-size:20px!important}
+ .mobile-bottom-nav span{font-size:10px!important}
+ .product-detail-modal{padding:0!important;background:#fff!important}
+ .product-detail-card{width:100%!important;height:100%!important;max-height:none!important;border-radius:0!important;padding:88px 20px 84px!important;box-shadow:none!important}
+ .product-detail-card h2{font-size:24px!important;color:#082c5c!important}
+}
