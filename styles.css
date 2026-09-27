@@ -7,3 +7,24 @@
 .home-v2{position:relative;min-height:650px;background:linear-gradient(115deg,#052f5d 0%,#073e73 58%,#7b8da0 100%);grid-template-columns:1.15fr .85fr;overflow:hidden}.home-v2 .hero-message{position:relative;z-index:2}.home-v2 .hero-message h1{font-size:clamp(44px,5vw,68px);line-height:1.03}.home-v2 .hero-message h1 span{color:#ffc400}.home-v2 .hero-message p{max-width:650px}.hero-checks{list-style:none;padding:0;margin:25px 0;color:#fff;font-size:19px}.hero-checks li{margin:13px 0}.hero-checks li:before{content:"✓";display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;background:#ffc400;color:#082c5c;font-weight:900;margin-right:14px}.hero-scene{height:100%;min-height:480px;position:relative;opacity:.92}.site-silhouette{position:absolute;inset:12% 0 0;background:linear-gradient(150deg,transparent 0 22%,#ffffff18 22% 25%,transparent 25% 37%,#ffffff12 37% 40%,transparent 40%),linear-gradient(#ffffff0d,#071d3a66);border-bottom:30px solid #ffffff18}.cement-stack{position:absolute;right:5%;bottom:4%;width:72%;display:grid;gap:7px}.cement-stack i{display:block;height:66px;background:linear-gradient(100deg,#c6a77b,#e1c397,#b89468);border-radius:8px;box-shadow:0 5px 12px #0004;transform:skew(-4deg)}.home-brands{padding:34px 8%!important;text-align:center;background:#f5f7fa}.home-brands h2{font-size:18px;letter-spacing:4px;color:#082c5c;margin:0 0 24px}.brand-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}.brand-grid div{min-height:78px;background:#fff;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#0b4ea2;box-shadow:0 3px 14px #071d3a0c}.brand-grid div:nth-child(2){color:#e3262e}.brand-grid div:nth-child(6){color:#e3262e}.brand-grid small{font-size:9px}
 @media(max-width:800px){.home-v2{display:block!important;min-height:auto!important;padding:34px 24px 30px!important;background:linear-gradient(115deg,#063967,#052b52)!important}.home-v2 .hero-message h1{font-size:39px!important;line-height:1.04!important;margin:0 0 20px!important}.home-v2 .hero-message p{font-size:18px!important;line-height:1.35}.hero-checks{font-size:16px;margin:22px 0}.hero-checks li{margin:11px 0}.hero-checks li:before{width:27px;height:27px;margin-right:11px}.home-v2 .actions{display:grid!important;gap:10px!important}.home-v2 .actions a{text-align:center!important;font-size:17px!important;font-weight:900!important;padding:16px!important}.hero-scene{display:none}.home-brands{padding:24px 14px!important}.home-brands h2{font-size:16px;margin-bottom:16px}.brand-grid{grid-template-columns:repeat(4,1fr);gap:8px}.brand-grid div{min-height:64px;font-size:15px}.brand-grid div:nth-child(n+5){grid-column:span 1}.benefits{grid-template-columns:repeat(3,1fr)!important;padding:12px 8px!important}.benefits div{border-radius:8px}.benefits b{font-size:11px!important}.benefits span{font-size:9px!important}}
 @media(max-width:430px){.home-v2 .hero-message h1{font-size:35px!important}.brand-grid{grid-template-columns:repeat(4,1fr)}.brand-grid div{font-size:13px}.brand-grid div:nth-child(5),.brand-grid div:nth-child(6),.brand-grid div:nth-child(7){grid-column:span 1}}
+
+/* Home mobile oficial — referência aprovada */
+.brand-grid img{max-width:92%;max-height:58px;object-fit:contain;display:block}
+.brand-ical strong{font-size:26px;color:#083d78}.brand-ical small{display:block;color:#333;font-size:9px;font-weight:800}
+@media(max-width:800px){
+ header{height:86px;background:#061d3b!important}
+ .home-v2{position:relative!important;padding:42px 24px 34px!important;background:
+ linear-gradient(90deg,rgba(3,27,55,.94) 0%,rgba(4,39,72,.78) 54%,rgba(5,31,57,.48) 100%),
+ url('https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1200&q=80') center/cover no-repeat!important}
+ .home-v2 .hero-message{max-width:610px}
+ .home-v2 .hero-message h1{font-family:Arial Black,Arial,sans-serif;font-size:40px!important;line-height:1.02!important;text-align:left!important}
+ .home-v2 .hero-message p{max-width:570px;color:#fff}
+ .home-v2 .actions .primary{background:#20c65a!important;color:#fff!important;border-radius:6px!important}
+ .home-v2 .actions .secondary{background:#071d3acc!important;color:#fff!important;border:1px solid #fff!important;border-radius:6px!important}
+ .home-brands{background:#f4f5f7!important}
+ .brand-grid div{background:#fff!important;border:1px solid #e4e7eb;min-height:72px!important;padding:7px!important}
+ .brand-grid img{max-height:48px}
+ .benefits{background:#f4f5f7!important}
+ .floating-wa{display:none!important}
+ .product-photo img{height:155px!important;object-fit:contain!important;background:#fff!important}
+}
