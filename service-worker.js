@@ -1,9 +1,9 @@
-const CACHE = "forte-atacarejo-v14";
+const CACHE = "forte-atacarejo-v15";
 const CORE = [
   "/",
   "/index.html",
-  "/styles.css?v=13",
-  "/app.js?v=13",
+  "/styles.css?v=15",
+  "/app.js?v=15",
   "/manifest.webmanifest",
 ];
 self.addEventListener("install", (e) => {
