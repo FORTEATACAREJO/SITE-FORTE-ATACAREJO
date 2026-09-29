@@ -1,4 +1,4 @@
-const CACHE = "forte-atacarejo-v13";
+const CACHE = "forte-atacarejo-v14";
 const CORE = [
   "/",
   "/index.html",
