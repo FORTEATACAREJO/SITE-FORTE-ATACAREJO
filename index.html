@@ -12,7 +12,7 @@ section{max-width:1180px;margin:auto;padding:62px 22px}h2{font-size:34px;margin:
 .contact{max-width:none;background:#171717;color:#fff}.contact>div{max-width:1180px;margin:auto;padding:54px 22px;display:flex;justify-content:space-between;align-items:center;gap:25px}.contact h2{margin:0}.float{position:fixed;right:20px;bottom:20px;background:#20bd5a;color:white;padding:15px 19px;border-radius:999px;font-weight:900;box-shadow:0 5px 20px #0004;z-index:9}
 footer{text-align:center;padding:28px;background:#0c0c0c;color:#aaa}
 @media(max-width:800px){.menu{display:none}.hero{min-height:500px}.hero p{font-size:18px}.suppliers{grid-template-columns:repeat(2,1fr)}.products{grid-template-columns:1fr}.contact>div{flex-direction:column;align-items:flex-start}.card img{height:280px}}
-</style></head><body>
+.quote{margin-top:14px;border-top:1px solid #eee;padding-top:14px}.quote summary{cursor:pointer;background:#171717;color:#fff;padding:12px;border-radius:9px;font-weight:900;text-align:center}.qform{display:grid;gap:9px;margin-top:12px}.qform input,.qform textarea{width:100%;padding:11px;border:1px solid #ccc;border-radius:8px;font:inherit}.qform button{border:0;background:#19b657;color:#fff;padding:12px;border-radius:8px;font-weight:900;cursor:pointer}</style></head><body>
 <header><div class="nav"><div class="brand"><img src="icons/forte-atacarejo.svg" alt="Forte Atacarejo">FORTE ATACAREJO</div><nav class="menu"><a href="#fornecedores">Fornecedores</a><a href="#produtos">Produtos</a><a href="#contato">Contato</a></nav><a class="wa" href="https://wa.me/5564999172700?text=Olá%20Forte%20Atacarejo,%20quero%20um%20orçamento">WhatsApp</a></div></header>
 <main><div class="hero"><div class="heroIn"><h1>FORÇA PARA A SUA OBRA.</h1><p>Cimento e materiais para construção com atendimento rápido e orçamento direto pelo WhatsApp.</p><a class="cta" href="https://wa.me/5564999172700?text=Olá%20Forte%20Atacarejo,%20quero%20um%20orçamento">PEDIR ORÇAMENTO · 64 99917-2700</a></div></div>
 <section id="fornecedores"><h2>Nossos fornecedores</h2><p class="sub">Marcas de qualidade para a sua obra.</p><div class="suppliers"><div class="supplier">LIZ CIMENTOS</div><div class="supplier">CSN</div><div class="supplier">VOTORANTIM CIMENTOS</div><div class="supplier">CIPLAN CIMENTO</div><div class="supplier">CAMPEÃO NACIONAL</div></div></section>
@@ -23,4 +23,18 @@ footer{text-align:center;padding:28px;background:#0c0c0c;color:#aaa}
 </div></section></main>
 <div class="contact" id="contato"><div><div><h2>Precisa de orçamento?</h2><p>Fale diretamente com a Forte Atacarejo.</p></div><a class="cta" href="https://wa.me/5564999172700">WhatsApp 64 99917-2700</a></div></div>
 <a class="float" aria-label="WhatsApp" href="https://wa.me/5564999172700">WhatsApp</a>
-<footer>© 2026 Forte Atacarejo · Todos os direitos reservados.</footer></body></html>
+<footer>© 2026 Forte Atacarejo · Todos os direitos reservados.</footer><script>
+document.querySelectorAll('.card').forEach((card,i)=>{
+ const name=card.querySelector('h3')?.textContent?.trim()||'Produto';
+ const info=card.querySelector('.info'); if(!info)return;
+ const old=info.querySelector('.btn'); if(old)old.style.display='none';
+ const box=document.createElement('details'); box.className='quote';
+ box.innerHTML='<summary>SOLICITAR ORÇAMENTO</summary><form class="qform"><input name="nome" placeholder="Nome / Empresa" required><input name="whatsapp" placeholder="Seu WhatsApp" required><input name="quantidade" placeholder="Quantidade (sacos/unidades)" required><textarea name="destino" rows="2" placeholder="Cidade/UF e local de entrega" required></textarea><textarea name="obs" rows="2" placeholder="Observação (opcional)"></textarea><button type="submit">ENVIAR PARA O WHATSAPP DA FORTE</button></form>';
+ info.appendChild(box);
+ box.querySelector('form').addEventListener('submit',e=>{
+  e.preventDefault(); const d=new FormData(e.currentTarget);
+  const msg='SOLICITAÇÃO DE ORÇAMENTO - SITE FORTE ATACAREJO\n\nProduto: '+name+'\nNome/Empresa: '+d.get('nome')+'\nWhatsApp: '+d.get('whatsapp')+'\nQuantidade: '+d.get('quantidade')+'\nDestino: '+d.get('destino')+'\nObservação: '+(d.get('obs')||'-');
+  window.open('https://wa.me/5564999172700?text='+encodeURIComponent(msg),'_blank');
+ });
+});
+</script></body></html>
