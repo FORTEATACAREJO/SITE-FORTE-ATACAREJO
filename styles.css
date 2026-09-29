@@ -1298,9 +1298,7 @@ footer a {
         rgba(3, 27, 55, 0.94) 0%,
         rgba(4, 39, 72, 0.78) 54%,
         rgba(5, 31, 57, 0.48) 100%
-      ),
-      url("https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1200&q=80")
-        center/cover no-repeat !important;
+      );
   }
   .home-v2 .hero-message {
     max-width: 610px;
@@ -1366,9 +1364,7 @@ footer a {
         rgba(3, 28, 57, 0.94) 0%,
         rgba(3, 31, 60, 0.79) 50%,
         rgba(3, 29, 55, 0.5) 100%
-      ),
-      url("https://argos.co/wp-content/uploads/2024/02/Resultados_Financieros_Argos_4T2023-scaled.jpg")
-        center/cover no-repeat !important;
+      );
   }
   .home-v2 .hero-message {
     width: 100%;
@@ -1457,9 +1453,7 @@ footer a {
     min-height: 0 !important;
     padding: 30px 20px 24px !important;
     background:
-      linear-gradient(90deg, rgba(2, 30, 59, 0.94), rgba(2, 34, 64, 0.56)),
-      url("https://argos.co/wp-content/uploads/2024/02/Resultados_Financieros_Argos_4T2023-scaled.jpg")
-        center/cover no-repeat !important;
+      linear-gradient(90deg, rgba(2, 30, 59, 0.94), rgba(2, 34, 64, 0.56));
   }
   .home-v2 .hero-message h1 {
     font-size: 38px !important;
