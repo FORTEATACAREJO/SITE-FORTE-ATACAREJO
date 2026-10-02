@@ -32,6 +32,18 @@ async function authorize(){
  root.innerHTML=`<section class="access-card compact"><strong>${escape(p.nome)} • ${escape(p.perfil)}</strong><button id="signout">SAIR</button></section>`;
  document.getElementById('signout').onclick=async()=>{++sequence;content.hidden=true;await client.auth.signOut();login();};
  if(isSite){document.getElementById('master-profile').textContent=`${p.nome}\nCPF: ${p.cpf}\nWhatsApp: ${p.whatsapp}\nE-mail: ${p.email}`;}
+ if(isCentral){
+   const {data:allowed,error:accessError}=await client.from('central_meus_acessos').select('codigo,nome,url');
+   if(accessError){login('Não foi possível conferir as permissões dos aplicativos.');return;}
+   const allowedMap=new Map((allowed||[]).map(x=>[x.codigo,x]));
+   document.querySelectorAll('[data-system]').forEach(card=>{
+     const code=card.dataset.system, item=allowedMap.get(code);
+     if(!item){card.remove();return;}
+     const link=card.querySelector('a'); if(link)link.href=item.url;
+   });
+   const grid=document.querySelector('.grid');
+   if(grid&&!grid.children.length)grid.innerHTML='<div class="access-card"><strong>Nenhum aplicativo liberado.</strong><p>Seu cadastro está aprovado, mas MASTER ou ADMIN ainda não liberou nenhum sistema para este CPF.</p></div>';
+ }
  content.hidden=false;
  if(!isSite&&!content.dataset.loaded){await import('./app.js');content.dataset.loaded='true';}
 }
