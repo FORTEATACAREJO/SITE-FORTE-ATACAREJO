@@ -1,0 +1,40 @@
+name: Build Central Forte Android
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/build-central-android.yml"
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Create Capacitor wrapper
+        run: |
+          mkdir -p mobile-build/www
+          cd mobile-build
+          npm init -y
+          npm install @capacitor/core @capacitor/cli @capacitor/android
+          printf '<!doctype html><html><body></body></html>' > www/index.html
+          npx cap init "Central Forte Atacarejo" "br.com.forteatacarejo.central" --web-dir=www
+          node -e "const fs=require('fs'); const p='capacitor.config.json'; const c=JSON.parse(fs.readFileSync(p)); c.server={url:'https://site-forte-atacarejo.onrender.com/sistemas.html',cleartext:false}; fs.writeFileSync(p,JSON.stringify(c,null,2));"
+          npx cap add android
+      - name: Build installable APK
+        run: |
+          cd mobile-build/android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Central-Forte-Atacarejo-Android-APK
+          path: mobile-build/android/app/build/outputs/apk/debug/app-debug.apk
