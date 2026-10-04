@@ -35,6 +35,7 @@ try{
   assert.equal(await page.locator('#workspace').isVisible(),true);
   assert.equal(await page.locator('#app-count').innerText(),'8');
   assert.match(await page.locator('body').innerText(),/Acesso livre à Central/);
+  assert.equal(await page.locator('#install-help').isVisible(),false);
  });
  await test('a Central não consulta Auth, permissões ou CDN para abrir',async()=>{
   assert.deepEqual(externalRequests,[]);
@@ -112,6 +113,8 @@ try{
   assert.equal(await fallback.locator('.app-card').count(),8);
   assert.equal(await fallback.locator('input,form').count(),0);
   assert.equal(await fallback.locator('.app-icon img').evaluateAll(images=>images.every(image=>image.complete&&image.naturalWidth===320)),true);
+  assert.match(await fallback.locator('body').innerText(),/Safari do iPhone/);
+  assert.match(await fallback.locator('body').innerText(),/Adicionar à Tela de Início/);
   await noJs.close();
  });
  await test('falha do script de instalação mantém todos os aplicativos na tela',async()=>{
@@ -136,7 +139,7 @@ try{
   const offline=await pwa.newPage();
   await offline.route('**/central-sw.js',route=>route.abort());
   await offline.goto(origin+'/sistemas.html');
-  await offline.evaluate(async()=>{await (await caches.open('forte-central-20261003-1')).put('/sistemas.html',new Response('central antiga'));await (await caches.open('forte-central-20261004-1')).put('/sistemas.html',new Response('central com desenhos genéricos'));await caches.open('outro-aplicativo-preservado');});
+  await offline.evaluate(async()=>{await (await caches.open('forte-central-20261003-1')).put('/sistemas.html',new Response('central antiga'));await (await caches.open('forte-central-20261004-1')).put('/sistemas.html',new Response('central com desenhos genéricos'));await (await caches.open('forte-central-20261004-2')).put('/sistemas.html',new Response('central sem link de instalacao'));await caches.open('outro-aplicativo-preservado');});
   await offline.unroute('**/central-sw.js');
   await offline.reload();
   await offline.evaluate(()=>navigator.serviceWorker.ready);
@@ -144,8 +147,9 @@ try{
   const keys=await offline.evaluate(()=>caches.keys());
   assert.equal(keys.includes('forte-central-20261003-1'),false);
   assert.equal(keys.includes('forte-central-20261004-1'),false);
+  assert.equal(keys.includes('forte-central-20261004-2'),false);
   assert.equal(keys.includes('outro-aplicativo-preservado'),true);
-  const urls=await offline.evaluate(async()=>{const cache=await caches.open('forte-central-20261004-2');return (await cache.keys()).map(request=>request.url);});
+  const urls=await offline.evaluate(async()=>{const cache=await caches.open('forte-central-20261004-3');return (await cache.keys()).map(request=>request.url);});
   assert.ok(urls.length>=17);
   for(const app of APPS)assert.ok(urls.some(url=>new URL(url).pathname===app.icon),app.code+' no cache');
   assert.ok(urls.every(url=>new URL(url).origin===locationOrigin(urls[0])));
@@ -157,6 +161,9 @@ try{
   assert.equal(new URL(offline.url()).pathname,'/sistemas.html');
   for(const app of APPS)assert.equal(await offline.locator('[data-system="'+app.code+'"] img').evaluate(image=>image.complete&&image.naturalWidth===320),true,app.code+' visível sem internet');
   assert.equal(await offline.locator('.central-emblem').evaluate(image=>image.complete&&image.naturalWidth===512),true);
+  await offline.goto(origin+'/sistemas.html?instalar=iphone');
+  assert.equal(await offline.locator('#install-help').isVisible(),true);
+  assert.equal(await offline.locator('#install-title').innerText(),'Instalar Central no iPhone');
   await pwa.close();
  });
  await test('Central usa sua arte própria no destaque, cabeçalho e favicon',async()=>{
@@ -182,6 +189,40 @@ try{
    assert.equal(icon.sizes,png.readUInt32BE(16)+'x'+png.readUInt32BE(20));
    assert.equal(png.equals(site),false);
   }
+ });
+ await test('link para iPhone abre instalação guiada, com ícone aprovado e retorno aos oito aplicativos',async()=>{
+  const iphone=await browser.newContext({serviceWorkers:'block',viewport:{width:390,height:844},userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 Version/26.0 Mobile/15E148 Safari/604.1'});
+  const mobile=await iphone.newPage(),requests=[];
+  mobile.on('pageerror',error=>errors.push(error.message));
+  iphone.on('request',request=>{if(new URL(request.url()).origin!==origin)requests.push(request.url());});
+  await mobile.goto(origin+'/sistemas.html?instalar=iphone');
+  await mobile.locator('#install-help').waitFor({state:'visible'});
+  assert.equal(await mobile.locator('#install-title').innerText(),'Instalar Central no iPhone');
+  assert.match(await mobile.locator('#install-instructions').innerText(),/Safari do iPhone/);
+  assert.match(await mobile.locator('#install-instructions').innerText(),/Adicionar à Tela de Início/);
+  assert.match(await mobile.locator('#install-instructions').innerText(),/Abrir como App da Web/);
+  assert.match(await mobile.locator('#install-instructions').innerText(),/WhatsApp/);
+  assert.equal(await mobile.locator('#install-instructions img').getAttribute('src'),'/central/icons/central-aprovada-192.png');
+  assert.equal(await mobile.locator('#install-instructions img').evaluate(image=>image.complete&&image.naturalWidth===192),true);
+  assert.equal(await mobile.locator('input,form').count(),0);
+  assert.equal(await mobile.locator('link[rel="apple-touch-icon"]').getAttribute('href'),'/central/icons/central-aprovada-180.png');
+  assert.equal(await mobile.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
+  assert.deepEqual(requests,[]);
+  await mobile.getByRole('button',{name:'Ver aplicativos',exact:true}).click();
+  assert.equal(await mobile.locator('#install-help').isVisible(),false);
+  assert.equal(await mobile.locator('.app-card').count(),8);
+  assert.equal(mobile.url(),origin+'/sistemas.html?instalar=iphone');
+  await iphone.close();
+ });
+ await test('Central já aberta como aplicativo não repete a orientação de instalar no iPhone',async()=>{
+  const installed=await browser.newContext({serviceWorkers:'block'});
+  await installed.addInitScript(()=>Object.defineProperty(navigator,'standalone',{value:true}));
+  const mobile=await installed.newPage();mobile.on('pageerror',error=>errors.push(error.message));
+  await mobile.goto(origin+'/sistemas.html?instalar=iphone');
+  await mobile.waitForFunction(()=>document.getElementById('install-central').hidden);
+  assert.equal(await mobile.locator('#install-help').isVisible(),false);
+  assert.equal(await mobile.locator('.app-card').count(),8);
+  await installed.close();
  });
  await test('Central termina sem erro de execução',()=>assert.deepEqual(errors,[]));
  if(process.env.CENTRAL_SCREENSHOT_DIR){
