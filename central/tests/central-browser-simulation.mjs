@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
-import {readFile} from 'node:fs/promises';
+import {readFile,readdir} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {createServer} from 'node:http';
 import {APPS} from '../core.mjs';
@@ -9,7 +9,7 @@ import {APPS} from '../core.mjs';
 const require=createRequire(import.meta.url);
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 const base=fileURLToPath(new URL('../../',import.meta.url));
-const files=['sistemas.html','central.html','central.css','central.webmanifest','central-sw.js','central/loader.js','central/main.js','central/core.mjs','icons/forte-atacarejo.svg','central/icons/central-192.png','central/icons/central-512.png'];
+const files=['sistemas.html','central.html','central.css','central.webmanifest','central-sw.js','central/loader.js','central/main.js','central/core.mjs','icons/forte-atacarejo.svg',...(await readdir(base+'central/icons')).filter(name=>name.endsWith('.png')).map(name=>'central/icons/'+name)];
 const contents=new Map(await Promise.all(files.map(async path=>['/'+path,await readFile(base+path)])));
 const types={html:'text/html',css:'text/css',js:'text/javascript',mjs:'text/javascript',webmanifest:'application/manifest+json',svg:'image/svg+xml',png:'image/png'};
 const server=createServer((request,response)=>{
@@ -51,7 +51,9 @@ try{
    assert.equal(await link.getAttribute('target'),'_blank');
    assert.match(await link.getAttribute('rel'),/noopener noreferrer/);
    assert.equal(await link.locator('h3').innerText(),app.name);
-   assert.equal(await link.locator('svg').count(),1);
+   assert.equal(await link.locator('.app-icon img').count(),1);
+   assert.equal(await link.locator('.app-icon img').getAttribute('src'),app.icon);
+   assert.equal(await link.locator('.app-icon img').evaluate(image=>image.complete&&image.naturalWidth===320&&image.naturalHeight===320),true,app.code+' — arte carregada');
   }
   assert.equal(await page.locator('.brand img').evaluate(image=>image.naturalWidth>0),true);
  });
@@ -109,6 +111,7 @@ try{
   const fallback=await noJs.newPage();await fallback.goto(origin+'/sistemas.html');
   assert.equal(await fallback.locator('.app-card').count(),8);
   assert.equal(await fallback.locator('input,form').count(),0);
+  assert.equal(await fallback.locator('.app-icon img').evaluateAll(images=>images.every(image=>image.complete&&image.naturalWidth===320)),true);
   await noJs.close();
  });
  await test('falha do script de instalação mantém todos os aplicativos na tela',async()=>{
@@ -133,16 +136,18 @@ try{
   const offline=await pwa.newPage();
   await offline.route('**/central-sw.js',route=>route.abort());
   await offline.goto(origin+'/sistemas.html');
-  await offline.evaluate(async()=>{await (await caches.open('forte-central-20261003-1')).put('/sistemas.html',new Response('central antiga'));await caches.open('outro-aplicativo-preservado');});
+  await offline.evaluate(async()=>{await (await caches.open('forte-central-20261003-1')).put('/sistemas.html',new Response('central antiga'));await (await caches.open('forte-central-20261004-1')).put('/sistemas.html',new Response('central com desenhos genéricos'));await caches.open('outro-aplicativo-preservado');});
   await offline.unroute('**/central-sw.js');
   await offline.reload();
   await offline.evaluate(()=>navigator.serviceWorker.ready);
   await offline.waitForFunction(()=>Boolean(navigator.serviceWorker.controller));
   const keys=await offline.evaluate(()=>caches.keys());
   assert.equal(keys.includes('forte-central-20261003-1'),false);
+  assert.equal(keys.includes('forte-central-20261004-1'),false);
   assert.equal(keys.includes('outro-aplicativo-preservado'),true);
-  const urls=await offline.evaluate(async()=>{const cache=await caches.open('forte-central-20261004-1');return (await cache.keys()).map(request=>request.url);});
-  assert.ok(urls.length>=8);
+  const urls=await offline.evaluate(async()=>{const cache=await caches.open('forte-central-20261004-2');return (await cache.keys()).map(request=>request.url);});
+  assert.ok(urls.length>=17);
+  for(const app of APPS)assert.ok(urls.some(url=>new URL(url).pathname===app.icon),app.code+' no cache');
   assert.ok(urls.every(url=>new URL(url).origin===locationOrigin(urls[0])));
   assert.ok(urls.every(url=>!url.includes('supabase')&&!url.includes('/auth/')&&!url.includes('onrender')));
   await pwa.setOffline(true);
@@ -150,7 +155,33 @@ try{
   assert.equal(await offline.locator('.app-card').count(),8);
   assert.equal(await offline.locator('input,form').count(),0);
   assert.equal(new URL(offline.url()).pathname,'/sistemas.html');
+  for(const app of APPS)assert.equal(await offline.locator('[data-system="'+app.code+'"] img').evaluate(image=>image.complete&&image.naturalWidth===320),true,app.code+' visível sem internet');
+  assert.equal(await offline.locator('.central-emblem').evaluate(image=>image.complete&&image.naturalWidth===512),true);
   await pwa.close();
+ });
+ await test('Central usa sua arte própria no destaque, cabeçalho e favicon',async()=>{
+  const siteIcon=APPS.find(app=>app.code==='SITE').icon;
+  for(const selector of ['.central-emblem','.brand img']){
+   const src=await page.locator(selector).getAttribute('src');
+   assert.notEqual(src,siteIcon);
+   assert.match(src,/central-aprovada-/);
+   assert.equal(await page.locator(selector).evaluate(image=>image.complete&&image.naturalWidth>0),true);
+  }
+  assert.equal(await page.locator('link[rel="icon"]').getAttribute('href'),'/central/icons/central-aprovada-48.png');
+  assert.equal(await page.locator('link[rel="apple-touch-icon"]').getAttribute('href'),'/central/icons/central-aprovada-180.png');
+  assert.equal(await page.locator('.app-icon svg').count(),0);
+  assert.equal(new Set(await page.locator('.app-icon img').evaluateAll(images=>images.map(image=>image.src))).size,8);
+ });
+ await test('ícones da instalação possuem as dimensões PNG declaradas e não reutilizam o site',()=>{
+  const manifest=JSON.parse(contents.get('/central.webmanifest').toString());
+  const site=contents.get(APPS.find(app=>app.code==='SITE').icon);
+  for(const icon of manifest.icons){
+   assert.match(icon.src,/central-aprovada-/);
+   const png=contents.get(icon.src);
+   assert.equal(png.subarray(1,4).toString(),'PNG');
+   assert.equal(icon.sizes,png.readUInt32BE(16)+'x'+png.readUInt32BE(20));
+   assert.equal(png.equals(site),false);
+  }
  });
  await test('Central termina sem erro de execução',()=>assert.deepEqual(errors,[]));
  if(process.env.CENTRAL_SCREENSHOT_DIR){

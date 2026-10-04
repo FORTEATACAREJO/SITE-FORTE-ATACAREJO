@@ -1,0 +1,98 @@
+[
+  {
+    "system": "VENDAS",
+    "file": "vendas-aprovado-320.png",
+    "sizes": "320x320",
+    "source": "Ícone Forte Vendas: Crescimento em Ação.png",
+    "source_sha256": "45837964e460b8a26fd43886d6ef2c32cb5aa9470b506d2eaa334949b3c43062",
+    "sha256": "57c6a6ea95f79aa59422ba8e837e31642bdffcc07c117e3e50fce30635f69f9a"
+  },
+  {
+    "system": "FINANCEIRO",
+    "file": "financeiro-aprovado-320.png",
+    "sizes": "320x320",
+    "source": "Ícone Financeiro Forte em Ouro 马会.png",
+    "source_sha256": "ea1ac89984d445170d67dc4e02982f1a266aa5796fd492fee2812df7e2dc3055",
+    "sha256": "08aa05b9b8003342afc6410ba1aa7b86e5cc3efad1738f0396c198c1d7c9376e"
+  },
+  {
+    "system": "FISCAL",
+    "file": "fiscal-aprovado-320.png",
+    "sizes": "320x320",
+    "source": "Ícone Forte Fiscal com Nota e Check.png",
+    "source_sha256": "e7faca76a3fdfbb306638be3b842050443fd3d48e9f6c153705444aea889c419",
+    "sha256": "0e3480af37ff2687d1791eeafed66695faede8b5e87a4f26a06f4fa4737693fe"
+  },
+  {
+    "system": "FRETE",
+    "file": "frete-aprovado-320.png",
+    "sizes": "320x320",
+    "source": "Ícone Verde Forte Frete.png",
+    "source_sha256": "91e99a578e1597c4aa66e58f3dfe5506b449a9d0fa346382c67ae30c706befdc",
+    "sha256": "d07d8bbbf1250124b08f95705bd68c2ef407d7b35f5bbcb2408e962aed8e5913"
+  },
+  {
+    "system": "VENDA_EXTERNA",
+    "file": "venda-externa-aprovado-320.png",
+    "sizes": "320x320",
+    "source": "Representante de Vendas na Construção.png",
+    "source_sha256": "25b93f08ba9d749447f1e5440a59e5823636b21e0b4077d9edb67ad58cf71831",
+    "sha256": "1d0afe2790e421548ec98c238d7d212a7f1f6b083af9f535b9fd4ee4fbc99ae4"
+  },
+  {
+    "system": "CARGA_DIRETA",
+    "file": "carga-direta-aprovado-320.png",
+    "sizes": "320x320",
+    "source": "Emblema de Logística e Entrega Direta.png",
+    "source_sha256": "154dfae6e1d267418586f886ccd9bab2125410b261834c224c89ea00aad7a818",
+    "sha256": "4a8cb3734297c388952d85afca5dba71ed60be608e8a8792a11aee9d648041d6"
+  },
+  {
+    "system": "PATIO",
+    "file": "patio-aprovado-320.png",
+    "sizes": "320x320",
+    "source": "Operador e Empilhadeira no Armazém.png",
+    "source_sha256": "f3df4e52a3d361633cdb0b9cd26568aabe313b3af2676dce42509ba8f888238f",
+    "sha256": "cba9c907fcd90b5f2692b770e4866218613c5f1ec573eb79589d59b16a939098"
+  },
+  {
+    "system": "SITE",
+    "file": "site-aprovado-320.png",
+    "sizes": "320x320",
+    "source": "central-anterior-512.png",
+    "source_sha256": "839f1d7a4706216a887feabe4639fca043fa75999a50afccf61857ec4ca685b7",
+    "sha256": "6c2c93283f60721eb6f3ea1c29eed7e02b56490f7e41e9df0ab24659ade7fb40"
+  },
+  {
+    "system": "CENTRAL",
+    "file": "central-aprovada-48.png",
+    "sizes": "48x48",
+    "source": "Central de Sistemas Forte Atacarejo.png",
+    "source_sha256": "3e904d5ebfebbe68518ce4979a453128a8702c2a61529ae88ceb574c30640b62",
+    "sha256": "ef427636c502a12754d33d51f764ebce961ebdb5d38c894a5daa8ec0655609fc"
+  },
+  {
+    "system": "CENTRAL",
+    "file": "central-aprovada-180.png",
+    "sizes": "180x180",
+    "source": "Central de Sistemas Forte Atacarejo.png",
+    "source_sha256": "3e904d5ebfebbe68518ce4979a453128a8702c2a61529ae88ceb574c30640b62",
+    "sha256": "d7477ec3daf9e32aa3b294664080a15ca2663452c3d070f6444c55574e239043"
+  },
+  {
+    "system": "CENTRAL",
+    "file": "central-aprovada-192.png",
+    "sizes": "192x192",
+    "source": "Central de Sistemas Forte Atacarejo.png",
+    "source_sha256": "3e904d5ebfebbe68518ce4979a453128a8702c2a61529ae88ceb574c30640b62",
+    "sha256": "1582dfcaa721e08d25db12fe1cac044aca5459fb7359d31dd67a3ca5c4ec9617"
+  },
+  {
+    "system": "CENTRAL",
+    "file": "central-aprovada-512.png",
+    "sizes": "512x512",
+    "source": "Central de Sistemas Forte Atacarejo.png",
+    "source_sha256": "3e904d5ebfebbe68518ce4979a453128a8702c2a61529ae88ceb574c30640b62",
+    "sha256": "ef431442eaa8f4f2b4d5d7769b72428abf15ffe487c0e1c55a602b64249ecdb9"
+  }
+]
