@@ -3,57 +3,160 @@ import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
-import {APPS,approvedProfile,validCPF,permittedApps} from '../core.mjs';
+import {createServer} from 'node:http';
+import {APPS} from '../core.mjs';
 
 const require=createRequire(import.meta.url);
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 const base=fileURLToPath(new URL('../../',import.meta.url));
-const html=await readFile(base+'sistemas.html','utf8'),css=await readFile(base+'central.css','utf8'),core=await readFile(base+'central/core.mjs','utf8'),logo=await readFile(base+'icons/forte-atacarejo.svg','utf8');
+const files=['sistemas.html','central.html','central.css','central.webmanifest','central-sw.js','central/loader.js','central/main.js','central/core.mjs','icons/forte-atacarejo.svg','central/icons/central-192.png','central/icons/central-512.png'];
+const contents=new Map(await Promise.all(files.map(async path=>['/'+path,await readFile(base+path)])));
+const types={html:'text/html',css:'text/css',js:'text/javascript',mjs:'text/javascript',webmanifest:'application/manifest+json',svg:'image/svg+xml',png:'image/png'};
+const server=createServer((request,response)=>{
+ const path=new URL(request.url,'http://localhost').pathname,body=contents.get(path);
+ if(!body){response.writeHead(404);response.end();return;}
+ response.writeHead(200,{'Content-Type':types[path.split('.').pop()]||'application/octet-stream','Cache-Control':'no-cache'});
+ response.end(body);
+});
+await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+const origin='http://127.0.0.1:'+server.address().port;
 const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE||undefined,args:process.env.PLAYWRIGHT_CHROMIUM_ARGS?JSON.parse(process.env.PLAYWRIGHT_CHROMIUM_ARGS):['--no-sandbox']});
-const errors=[];
-const page=await browser.newPage({viewport:{width:1440,height:1000}});
-page.setDefaultTimeout(6000);page.on('pageerror',error=>errors.push(error.message));
-await page.route('https://central.test/**',async route=>{
-  const pathname=new URL(route.request().url()).pathname;
-  if(pathname==='/central/core.mjs')return route.fulfill({contentType:'text/javascript',body:core});
-  if(pathname==='/central.css')return route.fulfill({contentType:'text/css',body:css});
-  if(pathname==='/icons/forte-atacarejo.svg')return route.fulfill({contentType:'image/svg+xml',body:logo});
-  if(pathname==='/sistemas.html')return route.fulfill({contentType:'text/html',body:html.replace(/<script type="module"[^>]*><\/script>/,'')});
-  return route.fulfill({status:404,body:''});
-});
-await page.goto('https://central.test/sistemas.html');
-await page.evaluate(async()=>{
-  const {mountCentral,APPS}=await import('/central/core.mjs');
-  window.calls=[];window.fixture={user:null,profile:{user_id:'USER-A',nome:'USUÁRIO SIMULADO',perfil:'MASTER',ativo:true,trocar_senha:false,status_aprovacao:'APROVADO'},allowed:APPS.map(a=>({codigo:a.code,nome:a.name,url:a.url,status:'APROVADO',permitido:true})),permissionError:false,profileError:false,loginError:false,delay:false};
-  const client={
-    auth:{async getUser(){return {data:{user:structuredClone(fixture.user)}}},async setSession(tokens){calls.push({operation:'setSession',tokens});fixture.user={id:'USER-A'};return {data:{user:fixture.user}}},async signOut(options){calls.push({operation:'signOut',options});fixture.user=null;return {error:null}}},
-    functions:{async invoke(name,args){calls.push({name,args});return fixture.loginError?{error:{context:{status:429,async json(){return {error:'MUITAS TENTATIVAS.'}}}}}:{data:{access_token:'SIM-ACCESS',refresh_token:'SIM-REFRESH'}}}},
-    from(table){const query={select(){return query},eq(column,value){calls.push({table,column,value});return query},async maybeSingle(){return {data:structuredClone(fixture.profile),error:fixture.profileError?{message:'SIM ERROR'}:null}},async then(resolve,reject){try{const snapshot=structuredClone(fixture.allowed);if(fixture.delay)await new Promise(r=>window.releasePermissions=r);return resolve({data:snapshot,error:fixture.permissionError?{message:'SIM ERROR'}:null})}catch(e){return reject(e)}}};return query;}
-  };
-  window.central=mountCentral({client,document,window,clearSession(){calls.push({operation:'clearSession'})}});
-  await central.authorize();
-});
-const text=()=>page.locator('body').innerText();
-async function authorize(changes={}){await page.evaluate(async changes=>{Object.assign(fixture,changes);await central.authorize();},changes);}
-const full=APPS.map(a=>({codigo:a.code,nome:a.name,url:a.url,status:'APROVADO',permitido:true}));
+const context=await browser.newContext({serviceWorkers:'block',viewport:{width:1440,height:1100}});
+const page=await context.newPage(),errors=[],externalRequests=[];
+page.setDefaultTimeout(6000);
+page.on('pageerror',error=>errors.push(error.message));
+context.on('request',request=>{if(new URL(request.url()).origin!==origin)externalRequests.push(request.url());});
+await context.route('https://*.onrender.com/**',route=>route.fulfill({contentType:'text/html',body:'<!doctype html><h1>Login separado do aplicativo</h1>'}));
+await page.goto(origin+'/sistemas.html');
 try{
-  await test('CPF válido, dígitos e senhas sem alteração do contrato',()=>{assert.equal(validCPF('529.982.247-25'),true);assert.equal(validCPF('11111111111'),false);assert.equal(validCPF('52998224726'),false);});
-  await test('Sem sessão, mostra CPF, recuperação e primeiro acesso sem aplicativos',async()=>{assert.equal(await page.getByLabel('CPF',{exact:true}).count(),1);assert.equal(await page.locator('.app-card').count(),0);assert.equal(await page.getByRole('link',{name:'Esqueci minha senha'}).getAttribute('href'),'https://forte-vendas.onrender.com/?recuperar-senha=1');assert.equal(await page.getByRole('link',{name:'Primeiro acesso'}).count(),1);});
-  await test('CPF inválido é bloqueado antes da chamada de login',async()=>{await page.getByLabel('CPF',{exact:true}).fill('11111111111');await page.getByLabel('Senha numérica',{exact:true}).fill('0123456');await page.getByRole('button',{name:'Entrar',exact:true}).click();assert.match(await text(),/Informe um CPF válido/);assert.equal(await page.evaluate(()=>calls.filter(c=>c.name==='login-cpf').length),0);});
-  await test('Login preserva zeros e senha de sete dígitos',async()=>{await page.getByLabel('CPF',{exact:true}).fill('52998224725');await page.getByLabel('Senha numérica',{exact:true}).fill('0123456');await page.getByRole('button',{name:'Entrar',exact:true}).click();await page.waitForSelector('.app-card');const call=await page.evaluate(()=>calls.find(c=>c.name==='login-cpf'));assert.deepEqual(call.args,{body:{cpf:'52998224725',password:'0123456'}});});
-  await test('Master aprovado vê oito aplicativos com links e abas corretos',async()=>{assert.equal(await page.locator('.app-card').count(),8);for(const app of APPS){const link=page.locator(`[data-system="${app.code}"]`);assert.equal(new URL(await link.getAttribute('href')).origin,app.url);assert.equal(await link.getAttribute('target'),'_blank');assert.match(await link.getAttribute('rel'),/noopener/);}assert.equal(await page.locator('#app-count').innerText(),'8');assert.equal(await page.locator('.brand img').evaluate(img=>img.naturalWidth>0),true);assert.deepEqual(errors,[]);});
-  await test('Somente o aplicativo individualmente aprovado é exibido',async()=>{await authorize({allowed:full.filter(a=>a.codigo==='PATIO')});assert.equal(await page.locator('.app-card').count(),1);assert.equal(await page.locator('.app-card').getAttribute('data-system'),'PATIO');});
-  await test('Atualizar liberações reconstrói a lista sem perder cartões removidos',async()=>{await authorize({allowed:full});assert.equal(await page.locator('.app-card').count(),8);await page.evaluate(()=>fixture.allowed=fixture.allowed.filter(a=>a.codigo==='VENDAS'));await page.getByRole('button',{name:'Atualizar acessos'}).click();await page.waitForFunction(()=>document.querySelectorAll('.app-card').length===1);assert.equal(await page.locator('.app-card').getAttribute('data-system'),'VENDAS');});
-  await test('Sem permissões, apresenta estado vazio sem liberar aplicativos',async()=>{await authorize({allowed:[]});assert.equal(await page.locator('.app-card').count(),0);assert.equal(await page.locator('#empty-state').isVisible(),true);});
-  await test('Perfil inativo, pendente, senha obrigatória e identidade diferente são bloqueados',async()=>{const original=await page.evaluate(()=>structuredClone(fixture.profile));for(const change of [{ativo:false},{status_aprovacao:'PENDENTE'},{trocar_senha:true},{user_id:'USER-B'}]){await authorize({profile:{...original,...change},allowed:full});assert.equal(await page.locator('#workspace').isVisible(),false);assert.equal(await page.locator('.app-card').count(),0);}await authorize({profile:original});});
-  await test('Falha de permissões não reaproveita cartões da consulta anterior',async()=>{await authorize({permissionError:true,allowed:full});assert.equal(await page.locator('.app-card').count(),0);assert.match(await text(),/Não foi possível conferir suas permissões/);await page.evaluate(()=>fixture.permissionError=false);await page.getByRole('button',{name:'Tentar novamente'}).click();await page.waitForSelector('.app-card');assert.equal(await page.locator('.app-card').count(),8);});
-  await test('Endereço externo ou javascript é recusado antes de mostrar o aplicativo',async()=>{for(const url of ['javascript:alert(1)','https://site-indevido.test','https://user:password@forte-vendas.onrender.com']){await authorize({allowed:[{...full[0],url}]});assert.equal(await page.locator('.app-card').count(),0);assert.match(await text(),/endereço inválido/);}await authorize({allowed:full});});
-  await test('Nome do perfil usa texto e não executa HTML recebido do banco',async()=>{const original=await page.evaluate(()=>structuredClone(fixture.profile));await authorize({profile:{...original,nome:'<img src=x onerror="window.injected=true">'}});assert.equal(await page.locator('#user-name img').count(),0);assert.equal(await page.evaluate(()=>window.injected),undefined);assert.match(await page.locator('#user-name').innerText(),/<img/);await authorize({profile:original});});
-  await test('Sair usa escopo local, limpa a sessão e permite outra lista no novo login',async()=>{await page.getByRole('button',{name:'Sair',exact:true}).click();await page.waitForSelector('#login-form');assert.equal(await page.locator('.app-card').count(),0);assert.deepEqual(await page.evaluate(()=>calls.find(c=>c.operation==='signOut').options),{scope:'local'});assert.equal(await page.evaluate(()=>calls.some(c=>c.operation==='clearSession')),true);await authorize({user:{id:'USER-A'},allowed:full.filter(a=>a.codigo==='FINANCEIRO')});assert.equal(await page.locator('.app-card').count(),1);assert.equal(await page.locator('.app-card').getAttribute('data-system'),'FINANCEIRO');});
-  await test('Resposta atrasada não reabre a Central após sair',async()=>{await page.evaluate(()=>{fixture.delay=true;window.pending=central.authorize()});await page.waitForFunction(()=>Boolean(window.releasePermissions));await page.evaluate(()=>central.signout());await page.evaluate(async()=>{releasePermissions();await pending;fixture.delay=false;window.releasePermissions=null});assert.equal(await page.locator('.app-card').count(),0);assert.equal(await page.locator('#workspace').isVisible(),false);assert.equal(await page.locator('#login-form').isVisible(),true);});
-  await test('Limite de tentativas é mostrado em português',async()=>{await page.evaluate(()=>fixture.loginError=true);await page.getByLabel('CPF',{exact:true}).fill('52998224725');await page.getByLabel('Senha numérica',{exact:true}).fill('123456');await page.getByRole('button',{name:'Entrar',exact:true}).click();await page.waitForFunction(()=>document.getElementById('access-status').textContent.includes('Muitas tentativas'));assert.match(await text(),/Aguarde um minuto/);await page.evaluate(()=>fixture.loginError=false);});
-  await test('Celular, computador e texto ampliado não criam rolagem horizontal',async()=>{await authorize({user:{id:'USER-A'},allowed:full});for(const [width,font] of [[1440,'16px'],[768,'16px'],[390,'16px'],[320,'16px'],[390,'32px']]){await page.setViewportSize({width,height:1000});await page.evaluate(font=>document.documentElement.style.fontSize=font,font);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1),true,`${width}px / fonte ${font}`);}await page.evaluate(()=>document.documentElement.style.fontSize='16px');await page.setViewportSize({width:1440,height:1000});});
-  await test('Contrato de permissões recusa falta de aprovação e não confia em perfil master',()=>{assert.equal(approvedProfile({user_id:'U',ativo:true,trocar_senha:false,status_aprovacao:'APROVADO'},'U'),true);assert.equal(approvedProfile({user_id:'U',ativo:true,status_aprovacao:'APROVADO'},'U'),false);assert.deepEqual(permittedApps([{...full[0],permitido:false}]),[]);assert.deepEqual(permittedApps([{...full[0],status:'PENDENTE'}]),[]);assert.deepEqual(permittedApps([{...full[0],codigo:'NAO_CADASTRADO'}]),[]);});
-  await test('Tela não importa arquivo do Pátio nem apresenta erro de execução',async()=>{assert.deepEqual(errors,[]);assert.equal(core.includes("import('./app.js')"),false);assert.equal(core.includes('service_role'),false);});
-  if(process.env.CENTRAL_SCREENSHOT_DIR){await page.screenshot({path:process.env.CENTRAL_SCREENSHOT_DIR+'/central-desktop.png',fullPage:true});await page.setViewportSize({width:390,height:844});await page.screenshot({path:process.env.CENTRAL_SCREENSHOT_DIR+'/central-mobile.png',fullPage:true});await page.evaluate(()=>central.signout());await page.screenshot({path:process.env.CENTRAL_SCREENSHOT_DIR+'/central-login.png',fullPage:true});}
-}finally{await browser.close();}
+ await test('visitante sem sessão vê todos os oito ícones sem formulário',async()=>{
+  assert.equal(await page.locator('.app-card').count(),8);
+  assert.equal(await page.locator('input,form').count(),0);
+  assert.equal(await page.locator('#workspace').isVisible(),true);
+  assert.equal(await page.locator('#app-count').innerText(),'8');
+  assert.match(await page.locator('body').innerText(),/Acesso livre à Central/);
+ });
+ await test('a Central não consulta Auth, permissões ou CDN para abrir',async()=>{
+  assert.deepEqual(externalRequests,[]);
+  assert.equal(await page.evaluate(()=>location.pathname),'/sistemas.html');
+  assert.equal(await page.locator('script[src*="supabase"]').count(),0);
+ });
+ await test('links e nomes correspondem a cada aplicativo sem credenciais',async()=>{
+  for(const app of APPS){
+   const link=page.locator('[data-system="'+app.code+'"]');
+   const url=new URL(await link.getAttribute('href'));
+   assert.equal(url.href,new URL(app.url).href);
+   assert.equal(url.search,'');assert.equal(url.hash,'');
+   assert.equal(url.username,'');assert.equal(url.password,'');
+   assert.equal(await link.getAttribute('target'),'_blank');
+   assert.match(await link.getAttribute('rel'),/noopener noreferrer/);
+   assert.equal(await link.locator('h3').innerText(),app.name);
+   assert.equal(await link.locator('svg').count(),1);
+  }
+  assert.equal(await page.locator('.brand img').evaluate(image=>image.naturalWidth>0),true);
+ });
+ await test('cada cartão abre sua própria aba sem desviar a Central',async()=>{
+  for(const app of APPS){
+   const popupPromise=page.waitForEvent('popup');
+   await page.locator('[data-system="'+app.code+'"]').click();
+   const popup=await popupPromise;await popup.waitForLoadState();
+   assert.equal(new URL(popup.url()).origin,new URL(app.url).origin);
+   assert.equal(page.url(),origin+'/sistemas.html');
+   assert.equal(await page.locator('.app-card').count(),8);
+   await popup.close();
+  }
+ });
+ await test('sessão antiga da Central não oculta cartões e é removida localmente',async()=>{
+  await page.evaluate(()=>{sessionStorage.setItem('forte-central-auth','expired-synthetic-session');sessionStorage.setItem('forte-central-auth-code-verifier','synthetic');sessionStorage.setItem('unrelated-preference','preserve');});
+  await page.reload();await page.waitForFunction(()=>sessionStorage.getItem('forte-central-auth')===null);
+  assert.equal(await page.locator('.app-card').count(),8);
+  assert.equal(await page.evaluate(()=>sessionStorage.getItem('forte-central-auth-code-verifier')),null);
+  assert.equal(await page.evaluate(()=>sessionStorage.getItem('unrelated-preference')),'preserve');
+ });
+ await test('atalho central.html retorna ao catálogo, sem ir ao Vendas',async()=>{
+  await page.goto(origin+'/central.html');await page.waitForURL(origin+'/sistemas.html');
+  assert.equal(await page.locator('.app-card').count(),8);
+ });
+ await test('celular, computador e texto ampliado preservam os ícones sem rolagem horizontal',async()=>{
+  for(const [width,font] of [[1440,'16px'],[768,'16px'],[390,'16px'],[320,'16px'],[390,'32px']]){
+   await page.setViewportSize({width,height:1100});await page.evaluate(font=>document.documentElement.style.fontSize=font,font);
+   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,width+'px / '+font);
+   assert.equal(await page.locator('.app-card').count(),8);
+  }
+  await page.evaluate(()=>document.documentElement.style.fontSize='16px');
+  await page.setViewportSize({width:1440,height:1100});
+ });
+ await test('instalação manual explica Chrome e Edge e pode ser fechada',async()=>{
+  await page.getByRole('button',{name:'Instalar Central',exact:true}).click();
+  assert.match(await page.locator('#install-instructions').innerText(),/Chrome ou Edge/);
+  await page.getByRole('button',{name:'Fechar instruções',exact:true}).click();
+  assert.equal(await page.locator('#install-help').isVisible(),false);
+ });
+ await test('prompt de instalação é oferecido somente após clique do usuário',async()=>{
+  await page.evaluate(()=>{window.installCalls=0;const event=new Event('beforeinstallprompt',{cancelable:true});event.prompt=async()=>{window.installCalls++};event.userChoice=Promise.resolve({outcome:'dismissed'});dispatchEvent(event);});
+  assert.equal(await page.evaluate(()=>window.installCalls),0);
+  await page.getByRole('button',{name:'Instalar Central',exact:true}).click();
+  assert.equal(await page.evaluate(()=>window.installCalls),1);
+ });
+ await test('manifesto instala a Central e preserva seu próprio endereço',()=>{
+  const manifest=JSON.parse(contents.get('/central.webmanifest').toString());
+  assert.equal(manifest.id,'/sistemas.html');assert.equal(manifest.start_url,'/sistemas.html');
+  assert.equal(manifest.display,'standalone');assert.equal(manifest.icons.length,2);
+  assert.equal(manifest.start_url.includes('vendas'),false);
+ });
+ await test('sem JavaScript o catálogo completo e seus links continuam disponíveis',async()=>{
+  const noJs=await browser.newContext({javaScriptEnabled:false,serviceWorkers:'block'});
+  const fallback=await noJs.newPage();await fallback.goto(origin+'/sistemas.html');
+  assert.equal(await fallback.locator('.app-card').count(),8);
+  assert.equal(await fallback.locator('input,form').count(),0);
+  await noJs.close();
+ });
+ await test('falha do script de instalação mantém todos os aplicativos na tela',async()=>{
+  const failed=await browser.newContext({serviceWorkers:'block'});
+  await failed.route('**/central/main.js*',route=>route.abort());
+  const fallback=await failed.newPage();await fallback.goto(origin+'/sistemas.html');
+  await fallback.locator('#central-status').waitFor({state:'visible'});
+  assert.match(await fallback.locator('#central-status').innerText(),/aplicativos continuam disponíveis/);
+  assert.equal(await fallback.locator('.app-card').count(),8);
+  await failed.close();
+ });
+ await test('iPhone recebe instruções do Safari para instalar a Central',async()=>{
+  const ios=await browser.newContext({serviceWorkers:'block',userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1'});
+  const iphone=await ios.newPage();await iphone.goto(origin+'/sistemas.html');
+  await iphone.getByRole('button',{name:'Instalar Central',exact:true}).click();
+  assert.match(await iphone.locator('#install-instructions').innerText(),/Safari do iPhone/);
+  assert.match(await iphone.locator('#install-instructions').innerText(),/Adicionar à Tela de Início/);
+  await ios.close();
+ });
+ await test('worker atualiza cache antigo e abre catálogo público sem internet',async()=>{
+  const pwa=await browser.newContext();
+  const offline=await pwa.newPage();
+  await offline.route('**/central-sw.js',route=>route.abort());
+  await offline.goto(origin+'/sistemas.html');
+  await offline.evaluate(async()=>{await (await caches.open('forte-central-20261003-1')).put('/sistemas.html',new Response('central antiga'));await caches.open('outro-aplicativo-preservado');});
+  await offline.unroute('**/central-sw.js');
+  await offline.reload();
+  await offline.evaluate(()=>navigator.serviceWorker.ready);
+  await offline.waitForFunction(()=>Boolean(navigator.serviceWorker.controller));
+  const keys=await offline.evaluate(()=>caches.keys());
+  assert.equal(keys.includes('forte-central-20261003-1'),false);
+  assert.equal(keys.includes('outro-aplicativo-preservado'),true);
+  const urls=await offline.evaluate(async()=>{const cache=await caches.open('forte-central-20261004-1');return (await cache.keys()).map(request=>request.url);});
+  assert.ok(urls.length>=8);
+  assert.ok(urls.every(url=>new URL(url).origin===locationOrigin(urls[0])));
+  assert.ok(urls.every(url=>!url.includes('supabase')&&!url.includes('/auth/')&&!url.includes('onrender')));
+  await pwa.setOffline(true);
+  await offline.reload();
+  assert.equal(await offline.locator('.app-card').count(),8);
+  assert.equal(await offline.locator('input,form').count(),0);
+  assert.equal(new URL(offline.url()).pathname,'/sistemas.html');
+  await pwa.close();
+ });
+ await test('Central termina sem erro de execução',()=>assert.deepEqual(errors,[]));
+ if(process.env.CENTRAL_SCREENSHOT_DIR){
+  await page.screenshot({path:process.env.CENTRAL_SCREENSHOT_DIR+'/central-publica-desktop.png',fullPage:true});
+  await page.setViewportSize({width:390,height:844});
+  await page.screenshot({path:process.env.CENTRAL_SCREENSHOT_DIR+'/central-publica-mobile.png',fullPage:true});
+ }
+}finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
+function locationOrigin(url){return new URL(url).origin;}

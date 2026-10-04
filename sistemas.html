@@ -4,15 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#082b50">
-  <meta name="description" content="Central Forte Atacarejo. Acesso aos aplicativos autorizados para o seu CPF.">
+  <meta name="description" content="Central Forte Atacarejo. Todos os aplicativos reunidos, sem login na Central.">
   <meta name="robots" content="noindex, nofollow">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Central Forte">
-  <title>Central de Sistemas | Forte Atacarejo</title>
+  <title>Central de Aplicativos | Forte Atacarejo</title>
   <link rel="icon" href="/icons/forte-atacarejo.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/central/icons/central-192.png">
   <link rel="manifest" href="/central.webmanifest">
-  <link rel="stylesheet" href="/central.css?v=20261003-1">
+  <link rel="stylesheet" href="/central.css?v=20261004-1">
 </head>
 <body>
   <a class="skip-link" href="#main">Ir para o conteúdo</a>
@@ -20,30 +20,36 @@
     <div class="topbar-inner">
       <a class="brand" href="/sistemas.html" aria-label="Central Forte Atacarejo">
         <img src="/icons/forte-atacarejo.svg" width="52" height="52" alt="">
-        <span><strong>FORTE <span>ATACAREJO</span></strong><small>CENTRAL DE SISTEMAS</small></span>
+        <span><strong>FORTE <span>ATACAREJO</span></strong><small>CENTRAL DE APLICATIVOS</small></span>
       </a>
-      <div class="topbar-actions">
-        <button class="install-button" id="install-central" type="button">Instalar Central</button>
-        <button class="signout-button" id="signout" type="button" hidden>Sair</button>
-      </div>
+      <div class="topbar-actions"><button class="install-button" id="install-central" type="button">Instalar Central</button></div>
     </div>
   </header>
   <main id="main">
-    <section id="access" aria-live="polite" aria-busy="true"><div class="loading"><span class="spinner" aria-hidden="true"></span><p>Conferindo seu acesso…</p></div></section>
-    <section id="workspace" hidden aria-labelledby="workspace-title">
+    <section id="workspace" aria-labelledby="workspace-title">
       <div class="workspace-heading">
-        <div><p class="eyebrow">SEU AMBIENTE FORTE</p><h1 id="workspace-title">Central de sistemas</h1><p class="lead">Escolha o aplicativo para trabalhar.</p></div>
-        <div class="identity"><span class="avatar" aria-hidden="true" id="avatar"></span><div><strong id="user-name"></strong><span id="user-role"></span></div></div>
+        <div><p class="eyebrow">TODOS OS APLICATIVOS EM UM SÓ LUGAR</p><h1 id="workspace-title">Central de aplicativos</h1><p class="lead">Escolha o aplicativo que deseja abrir. Não é preciso entrar na Central.</p></div>
+        <span class="central-badge">Acesso livre à Central</span>
       </div>
-      <div class="apps-toolbar"><h2>Seus aplicativos <span id="app-count"></span></h2><button class="refresh-button" id="refresh-access" type="button">Atualizar acessos</button></div>
-      <div class="apps-grid" id="apps-grid"></div>
-      <div class="empty-state" id="empty-state" hidden><h3>Nenhum aplicativo liberado</h3><p>Solicite ao administrador a liberação dos sistemas para o seu CPF.</p></div>
-      <p class="workspace-note">Os aplicativos abrem em uma nova aba.</p>
+      <div class="apps-toolbar"><h2>Aplicativos Forte <span id="app-count">8</span></h2></div>
+      <div class="apps-grid" id="apps-grid">
+        <a class="app-card" data-system="VENDAS" href="https://forte-vendas.onrender.com" target="_blank" rel="noopener noreferrer" aria-label="Abrir Forte Vendas em nova aba" style="--accent:#c82333;--tint:#fff0f2"><div class="card-top"><span class="app-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h2l2.4 12.4a2 2 0 0 0 2 1.6H19a2 2 0 0 0 2-1.6L22 7H6"/><circle cx="10" cy="21" r="1"/><circle cx="19" cy="21" r="1"/></svg></span><span class="app-category">Comercial</span></div><h3>Forte Vendas</h3><p>Balcão, clientes, orçamentos e estoque operacional.</p><span class="app-open">Abrir aplicativo</span></a>
+        <a class="app-card" data-system="FINANCEIRO" href="https://forte-financeiro.onrender.com" target="_blank" rel="noopener noreferrer" aria-label="Abrir Forte Financeiro em nova aba" style="--accent:#147050;--tint:#eaf7f0"><div class="card-top"><span class="app-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 15h3m5 0h2"/></svg></span><span class="app-category">Financeiro</span></div><h3>Forte Financeiro</h3><p>Contas a pagar e receber, caixa e conciliação bancária.</p><span class="app-open">Abrir aplicativo</span></a>
+        <a class="app-card" data-system="FISCAL" href="https://forte-fiscal.onrender.com" target="_blank" rel="noopener noreferrer" aria-label="Abrir Forte Fiscal em nova aba" style="--accent:#1d64a7;--tint:#edf4fc"><div class="card-top"><span class="app-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M8 13h8M8 17h6"/></svg></span><span class="app-category">Fiscal</span></div><h3>Forte Fiscal</h3><p>Documentos fiscais, XML, SPED e estoque por CNPJ.</p><span class="app-open">Abrir aplicativo</span></a>
+        <a class="app-card" data-system="FRETE" href="https://forte-frete.onrender.com" target="_blank" rel="noopener noreferrer" aria-label="Abrir Forte Frete em nova aba" style="--accent:#a52c38;--tint:#fff1f3"><div class="card-top"><span class="app-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h14v13H1zM15 8h4l3 4v4h-7"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></span><span class="app-category">Transporte</span></div><h3>Forte Frete</h3><p>Motoristas, veículos, documentos e acompanhamento de viagens.</p><span class="app-open">Abrir aplicativo</span></a>
+        <a class="app-card" data-system="VENDA_EXTERNA" href="https://forte-venda-externa.onrender.com" target="_blank" rel="noopener noreferrer" aria-label="Abrir Venda Externa em nova aba" style="--accent:#49649e;--tint:#f0f3fc"><div class="card-top"><span class="app-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12a30 30 0 0 0 18 0M10 12v3h4v-3"/></svg></span><span class="app-category">Comercial</span></div><h3>Venda Externa</h3><p>Clientes, obras, propostas e acompanhamento das vendas.</p><span class="app-open">Abrir aplicativo</span></a>
+        <a class="app-card" data-system="CARGA_DIRETA" href="https://forte-carga-direta.onrender.com" target="_blank" rel="noopener noreferrer" aria-label="Abrir Carga Direta em nova aba" style="--accent:#2a716e;--tint:#edf7f6"><div class="card-top"><span class="app-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 9 5v9l-9 5-9-5V8Z"/><path d="m3 8 9 5 9-5M12 13v9M7.5 5.5l9 5"/></svg></span><span class="app-category">Logística</span></div><h3>Carga Direta</h3><p>Pedidos ao fornecedor, cargas diretas e pallets.</p><span class="app-open">Abrir aplicativo</span></a>
+        <a class="app-card" data-system="PATIO" href="https://forte-operador-patio.onrender.com" target="_blank" rel="noopener noreferrer" aria-label="Abrir Operador de Pátio em nova aba" style="--accent:#a2670a;--tint:#fff6e7"><div class="card-top"><span class="app-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21V9l9-6 9 6v12M7 21v-9h10v9M3 21h18M7 16h10M7 12h10"/></svg></span><span class="app-category">Estoque</span></div><h3>Operador de Pátio</h3><p>Contagem física, reservas e conferência para fechamento do caixa.</p><span class="app-open">Abrir aplicativo</span></a>
+        <a class="app-card" data-system="SITE" href="https://site-forte-atacarejo.onrender.com" target="_blank" rel="noopener noreferrer" aria-label="Abrir Site Forte Atacarejo em nova aba" style="--accent:#082b50;--tint:#edf2f8"><div class="card-top"><span class="app-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a19 19 0 0 1 0 20 19 19 0 0 1 0-20"/></svg></span><span class="app-category">Institucional</span></div><h3>Site Forte Atacarejo</h3><p>Catálogo por marca, produtos e solicitações de orçamento.</p><span class="app-open">Abrir aplicativo</span></a>
+      </div>
+      <div class="central-guidance"><h2>Instale uma vez, acesse todos por aqui</h2><p>Instale a Central no celular ou no computador para reunir os atalhos dos aplicativos em uma única tela.</p><p>Cada sistema solicita seu próprio CPF e senha. O acesso depende do cadastro e da liberação pelo master ou administrador.</p></div>
+      <p class="workspace-note">Os aplicativos abrem separadamente em uma nova aba. O site da empresa tem acesso público.</p>
+      <p id="central-status" class="workspace-note" role="status" aria-live="polite"></p>
     </section>
+    <noscript><p class="workspace-note">Todos os aplicativos estão disponíveis nos ícones acima. Para instalar a Central, use o menu do navegador.</p></noscript>
   </main>
   <footer><span>© 2026 Forte Atacarejo</span><a href="/">Site da empresa</a></footer>
   <dialog id="install-help" aria-labelledby="install-title"><div class="dialog-top"><h2 id="install-title">Instalar Central Forte</h2><button id="close-install" type="button" aria-label="Fechar instruções">×</button></div><div id="install-instructions"></div></dialog>
-  <noscript><div class="notice">Ative o JavaScript no navegador para entrar na Central de Sistemas.</div></noscript>
-  <script type="module" src="/central/loader.js?v=20261003-1"></script>
+  <script type="module" src="/central/loader.js?v=20261004-1"></script>
 </body>
 </html>

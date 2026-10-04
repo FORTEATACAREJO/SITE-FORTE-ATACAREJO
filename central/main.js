@@ -1,11 +1,8 @@
-import {createClient} from 'https://esm.sh/@supabase/supabase-js@2.57.4';
-import {mountCentral} from './core.mjs?v=20261003-1';
-
-const storageKey='forte-central-auth';
-const client=createClient('https://gtwecfyffjszghnvtlzr.supabase.co','sb_publishable_T7OUUD1cqIxMhll4UUSsyBQPFB_TLcx',{auth:{storage:sessionStorage,storageKey,persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
-const central=mountCentral({client,document,window,clearSession(){sessionStorage.removeItem(storageKey);sessionStorage.removeItem(storageKey+'-code-verifier');}});
-client.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT')central.invalidate();});
-central.authorize();
+// A Central é pública. A autenticação e a autorização pertencem a cada aplicativo.
+try {
+  sessionStorage.removeItem('forte-central-auth');
+  sessionStorage.removeItem('forte-central-auth-code-verifier');
+} catch {}
 
 const installButton=document.getElementById('install-central'),dialog=document.getElementById('install-help'),instructions=document.getElementById('install-instructions');
 let prompt;

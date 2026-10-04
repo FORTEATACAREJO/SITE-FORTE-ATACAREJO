@@ -1,5 +1,5 @@
-const CACHE='forte-central-20261003-1';
-const STATIC=['/sistemas.html','/central.css?v=20261003-1','/central/loader.js?v=20261003-1','/central/main.js?v=20261003-1','/central/core.mjs?v=20261003-1','/central.webmanifest','/icons/forte-atacarejo.svg','/central/icons/central-192.png','/central/icons/central-512.png'];
+const CACHE='forte-central-20261004-1';
+const STATIC=['/sistemas.html','/central.css?v=20261004-1','/central/loader.js?v=20261004-1','/central/main.js?v=20261004-1','/central.webmanifest','/icons/forte-atacarejo.svg','/central/icons/central-192.png','/central/icons/central-512.png'];
 const paths=new Set(STATIC.map(path=>new URL(path,self.location.origin).pathname));
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(STATIC)).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('forte-central-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()));});

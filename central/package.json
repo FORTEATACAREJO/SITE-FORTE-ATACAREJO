@@ -1,1 +1,1 @@
-{"name":"forte-central","private":true,"type":"module","version":"1.0.0","scripts":{"test":"node --test tests/central-browser-simulation.mjs"}}
+{"name":"forte-central","private":true,"type":"module","version":"1.1.0","scripts":{"test":"node --test tests/central-browser-simulation.mjs"}}
