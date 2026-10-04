@@ -149,7 +149,7 @@ try{
   assert.equal(keys.includes('forte-central-20261004-1'),false);
   assert.equal(keys.includes('forte-central-20261004-2'),false);
   assert.equal(keys.includes('outro-aplicativo-preservado'),true);
-  const urls=await offline.evaluate(async()=>{const cache=await caches.open('forte-central-20261004-3');return (await cache.keys()).map(request=>request.url);});
+  const urls=await offline.evaluate(async()=>{const cache=await caches.open('forte-central-20261004-4');return (await cache.keys()).map(request=>request.url);});
   assert.ok(urls.length>=17);
   for(const app of APPS)assert.ok(urls.some(url=>new URL(url).pathname===app.icon),app.code+' no cache');
   assert.ok(urls.every(url=>new URL(url).origin===locationOrigin(urls[0])));
@@ -174,8 +174,8 @@ try{
    assert.match(src,/central-aprovada-/);
    assert.equal(await page.locator(selector).evaluate(image=>image.complete&&image.naturalWidth>0),true);
   }
-  assert.equal(await page.locator('link[rel="icon"]').getAttribute('href'),'/central/icons/central-aprovada-48.png');
-  assert.equal(await page.locator('link[rel="apple-touch-icon"]').getAttribute('href'),'/central/icons/central-aprovada-180.png');
+  assert.equal(await page.locator('link[rel="icon"]').getAttribute('href'),'/central/icons/central-aprovada-48.png?v=20261004-4');
+  assert.equal(await page.locator('link[rel="apple-touch-icon"]').getAttribute('href'),'/central/icons/central-aprovada-180.png?v=20261004-4');
   assert.equal(await page.locator('.app-icon svg').count(),0);
   assert.equal(new Set(await page.locator('.app-icon img').evaluateAll(images=>images.map(image=>image.src))).size,8);
  });
@@ -184,7 +184,7 @@ try{
   const site=contents.get(APPS.find(app=>app.code==='SITE').icon);
   for(const icon of manifest.icons){
    assert.match(icon.src,/central-aprovada-/);
-   const png=contents.get(icon.src);
+   const png=contents.get(new URL(icon.src,origin).pathname);
    assert.equal(png.subarray(1,4).toString(),'PNG');
    assert.equal(icon.sizes,png.readUInt32BE(16)+'x'+png.readUInt32BE(20));
    assert.equal(png.equals(site),false);
@@ -202,10 +202,10 @@ try{
   assert.match(await mobile.locator('#install-instructions').innerText(),/Adicionar à Tela de Início/);
   assert.match(await mobile.locator('#install-instructions').innerText(),/Abrir como App da Web/);
   assert.match(await mobile.locator('#install-instructions').innerText(),/WhatsApp/);
-  assert.equal(await mobile.locator('#install-instructions img').getAttribute('src'),'/central/icons/central-aprovada-192.png');
+  assert.equal(await mobile.locator('#install-instructions img').getAttribute('src'),'/central/icons/central-aprovada-192.png?v=20261004-4');
   assert.equal(await mobile.locator('#install-instructions img').evaluate(image=>image.complete&&image.naturalWidth===192),true);
   assert.equal(await mobile.locator('input,form').count(),0);
-  assert.equal(await mobile.locator('link[rel="apple-touch-icon"]').getAttribute('href'),'/central/icons/central-aprovada-180.png');
+  assert.equal(await mobile.locator('link[rel="apple-touch-icon"]').getAttribute('href'),'/central/icons/central-aprovada-180.png?v=20261004-4');
   assert.equal(await mobile.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
   assert.deepEqual(requests,[]);
   await mobile.getByRole('button',{name:'Ver aplicativos',exact:true}).click();
@@ -223,6 +223,24 @@ try{
   assert.equal(await mobile.locator('#install-help').isVisible(),false);
   assert.equal(await mobile.locator('.app-card').count(),8);
   await installed.close();
+ });
+ await test('link Android mostra a arte aprovada e permite atualizar o ícone antigo',async()=>{
+  const android=await browser.newContext({serviceWorkers:'block',viewport:{width:390,height:844}});
+  const mobile=await android.newPage();await mobile.goto(origin+'/sistemas.html?instalar=android');
+  await mobile.locator('#install-help').waitFor({state:'visible'});
+  assert.match(await mobile.locator('#install-instructions').innerText(),/Analisar atualização do app/);
+  assert.equal(await mobile.locator('#install-instructions img').evaluate(image=>image.complete&&image.naturalWidth===192),true);
+  await mobile.evaluate(()=>{window.installCalls=0;const event=new Event('beforeinstallprompt',{cancelable:true});event.prompt=async()=>{window.installCalls++};event.userChoice=Promise.resolve({outcome:'dismissed'});dispatchEvent(event);});
+  await mobile.locator('#install-help').getByRole('button',{name:'Instalar Central',exact:true}).click();
+  assert.equal(await mobile.evaluate(()=>window.installCalls),1);
+  await mobile.getByRole('button',{name:'Ver aplicativos',exact:true}).click();
+  assert.equal(await mobile.locator('.app-card').count(),8);assert.equal(mobile.url(),origin+'/sistemas.html?instalar=android');
+  await android.close();
+ });
+ await test('URLs dos ícones de instalação mudaram sem alterar a identidade da Central',()=>{
+  const manifest=JSON.parse(contents.get('/central.webmanifest').toString());
+  assert.equal(manifest.id,'/sistemas.html');assert.equal(manifest.start_url,'/sistemas.html');
+  for(const icon of manifest.icons)assert.equal(new URL(icon.src,origin).search,'?v=20261004-4');
  });
  await test('Central termina sem erro de execução',()=>assert.deepEqual(errors,[]));
  if(process.env.CENTRAL_SCREENSHOT_DIR){
