@@ -1,4 +1,5 @@
-const CACHE="site-forte-atacarejo-auth-20261005-1";
+importScripts('/forte-notification-worker.js?v=20261005-1');
+const CACHE="site-forte-atacarejo-auth-20261005-notifications-1";
 const STATIC=["/sistemas.html","/central.css?v=20261004-4","/central/loader.js?v=20261004-4","/central/main.js?v=20261004-4","/central.webmanifest?v=20261004-4","/central/icons/vendas-aprovado-320.png","/central/icons/financeiro-aprovado-320.png","/central/icons/fiscal-aprovado-320.png","/central/icons/frete-aprovado-320.png","/central/icons/venda-externa-aprovado-320.png","/central/icons/carga-direta-aprovado-320.png","/central/icons/patio-aprovado-320.png","/central/icons/site-aprovado-320.png","/central/icons/central-aprovada-48.png?v=20261004-4","/central/icons/central-aprovada-180.png?v=20261004-4","/central/icons/central-aprovada-192.png?v=20261004-4","/central/icons/central-aprovada-512.png?v=20261004-4"];
 const paths=new Set(STATIC.map(path=>new URL(path,self.location.origin).pathname));
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(STATIC)).then(()=>self.skipWaiting()));});
