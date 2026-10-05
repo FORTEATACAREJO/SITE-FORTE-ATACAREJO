@@ -31,3 +31,25 @@ if(iphoneLink&&!standalone())showInstallHelp(true);
 if(androidLink)showInstallHelp(false);
 document.getElementById('close-install').onclick=()=>dialog.close();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('/central-sw.js',{scope:'/'}).catch(()=>{});
+
+const notificationButton=document.getElementById('notification-center'),notificationTotal=document.getElementById('notification-total'),notificationSummary=document.getElementById('notification-summary');
+const notificationState=new Map();
+function renderCentralNotifications(){
+ let total=0,items=[];
+ document.querySelectorAll('.app-card').forEach(card=>{
+  const code=card.dataset.system,badge=card.querySelector('.app-notification'),entry=notificationState.get(code)||{count:0,items:[]},count=Math.max(0,Number(entry.count)||0);
+  total+=count;badge.textContent=String(count);badge.hidden=count===0;badge.setAttribute('aria-label',count?count+' pendência'+(count===1?'':'s'):'Sem pendências');
+  if(count)items.push('<a href="'+card.href+'" target="_blank" rel="noopener noreferrer"><strong>'+card.querySelector('h3').textContent+'</strong><span>'+count+' pendência'+(count===1?'':'s')+' para verificar</span></a>');
+ });
+ notificationTotal.textContent=String(total);notificationButton.classList.toggle('has-notifications',total>0);
+ notificationSummary.innerHTML=items.length?items.join(''):'<p>Nenhuma pendência informada pelos aplicativos.</p>';
+}
+function receiveCentralNotifications(event){
+ const data=event?.data;if(!data||data.type!=='FORTE_NOTIFICATION_STATUS'||!data.app)return;
+ notificationState.set(String(data.app).toUpperCase(),{count:data.count,items:Array.isArray(data.items)?data.items:[]});renderCentralNotifications();
+}
+window.addEventListener('message',receiveCentralNotifications);
+window.addEventListener('storage',event=>{if(!event.key?.startsWith('forte-notifications:'))return;try{const data=JSON.parse(event.newValue||'{}');receiveCentralNotifications({data:{...data,type:'FORTE_NOTIFICATION_STATUS',app:event.key.split(':')[1]}})}catch{}});
+for(const card of document.querySelectorAll('.app-card')){try{const raw=localStorage.getItem('forte-notifications:'+card.dataset.system);if(raw){const data=JSON.parse(raw);notificationState.set(card.dataset.system,{count:data.count||0,items:data.items||[]});}}catch{}}
+notificationButton?.addEventListener('click',()=>{notificationSummary.hidden=!notificationSummary.hidden;});
+renderCentralNotifications();
