@@ -16,3 +16,4 @@
 .central-guidance{min-width:0}
 .notification-center-button{max-width:100%;overflow-wrap:anywhere}
 .skip-link{max-width:calc(100% - 32px);overflow-wrap:anywhere}
+.workspace-heading>div{min-width:0;max-width:100%;overflow-wrap:anywhere}
