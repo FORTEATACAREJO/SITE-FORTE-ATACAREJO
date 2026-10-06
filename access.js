@@ -1,5 +1,5 @@
 import {readLastCpf,saveLastCpf,accessTimeout} from './access-standard.js';
-import {createClient} from 'https://esm.sh/@supabase/supabase-js@2.57.4';
+import {createClient} from 'https://esm.sh/@supabase/supabase-js@2.116.0';
 const client=createClient('https://gtwecfyffjszghnvtlzr.supabase.co','sb_publishable_T7OUUD1cqIxMhll4UUSsyBQPFB_TLcx',{auth:{storage:localStorage,persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
 const digits=v=>String(v||'').replace(/\D/g,'');
 const root=document.getElementById('access'),content=document.getElementById('protected-content');
