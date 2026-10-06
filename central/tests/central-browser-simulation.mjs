@@ -9,7 +9,7 @@ import {APPS} from '../core.mjs';
 const require=createRequire(import.meta.url);
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 const base=fileURLToPath(new URL('../../',import.meta.url));
-const files=['sistemas.html','central.html','central.css','central.webmanifest','central-sw.js','central/loader.js','central/main.js','central/core.mjs','icons/forte-atacarejo.svg',...(await readdir(base+'central/icons')).filter(name=>name.endsWith('.png')).map(name=>'central/icons/'+name)];
+const files=['sistemas.html','central.html','central.css','central.webmanifest','central-sw.js','forte-notification-worker.js','central/loader.js','central/main.js','central/core.mjs','icons/forte-atacarejo.svg',...(await readdir(base+'central/icons')).filter(name=>name.endsWith('.png')).map(name=>'central/icons/'+name)];
 const contents=new Map(await Promise.all(files.map(async path=>['/'+path,await readFile(base+path)])));
 const types={html:'text/html',css:'text/css',js:'text/javascript',mjs:'text/javascript',webmanifest:'application/manifest+json',svg:'image/svg+xml',png:'image/png'};
 const server=createServer((request,response)=>{
@@ -21,6 +21,7 @@ const server=createServer((request,response)=>{
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const origin='http://127.0.0.1:'+server.address().port;
 const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE||undefined,args:process.env.PLAYWRIGHT_CHROMIUM_ARGS?JSON.parse(process.env.PLAYWRIGHT_CHROMIUM_ARGS):['--no-sandbox']});
+const createContext=browser.newContext.bind(browser);browser.newContext=async options=>{const context=await createContext(options);await context.route('https://*.onrender.com/**',route=>route.fulfill({contentType:'text/html',body:'<!doctype html><h1>Aplicativo de teste</h1>'}));return context;};
 const context=await browser.newContext({serviceWorkers:'block',viewport:{width:1440,height:1100}});
 const page=await context.newPage(),errors=[],externalRequests=[];
 page.setDefaultTimeout(6000);
@@ -38,7 +39,7 @@ try{
   assert.equal(await page.locator('#install-help').isVisible(),false);
  });
  await test('a Central não consulta Auth, permissões ou CDN para abrir',async()=>{
-  assert.deepEqual(externalRequests,[]);
+  assert.ok(externalRequests.every(isNotificationBridge),JSON.stringify(externalRequests));
   assert.equal(await page.evaluate(()=>location.pathname),'/sistemas.html');
   assert.equal(await page.locator('script[src*="supabase"]').count(),0);
  });
@@ -149,7 +150,8 @@ try{
   assert.equal(keys.includes('forte-central-20261004-1'),false);
   assert.equal(keys.includes('forte-central-20261004-2'),false);
   assert.equal(keys.includes('outro-aplicativo-preservado'),true);
-  const urls=await offline.evaluate(async()=>{const cache=await caches.open('forte-central-20261004-4');return (await cache.keys()).map(request=>request.url);});
+  const workerCache=contents.get('/central-sw.js').toString().match(/const CACHE="([^"]+)"/)[1];
+  const urls=await offline.evaluate(async name=>{const cache=await caches.open(name);return (await cache.keys()).map(request=>request.url);},workerCache);
   assert.ok(urls.length>=17);
   for(const app of APPS)assert.ok(urls.some(url=>new URL(url).pathname===app.icon),app.code+' no cache');
   assert.ok(urls.every(url=>new URL(url).origin===locationOrigin(urls[0])));
@@ -207,7 +209,7 @@ try{
   assert.equal(await mobile.locator('input,form').count(),0);
   assert.equal(await mobile.locator('link[rel="apple-touch-icon"]').getAttribute('href'),'/central/icons/central-aprovada-180.png?v=20261004-4');
   assert.equal(await mobile.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
-  assert.deepEqual(requests,[]);
+  assert.ok(requests.every(isNotificationBridge),JSON.stringify(requests));
   await mobile.getByRole('button',{name:'Ver aplicativos',exact:true}).click();
   assert.equal(await mobile.locator('#install-help').isVisible(),false);
   assert.equal(await mobile.locator('.app-card').count(),8);
@@ -248,5 +250,7 @@ try{
   await page.setViewportSize({width:390,height:844});
   await page.screenshot({path:process.env.CENTRAL_SCREENSHOT_DIR+'/central-publica-mobile.png',fullPage:true});
  }
-}finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
+}finally{await browser.close();server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}
 function locationOrigin(url){return new URL(url).origin;}
+
+function isNotificationBridge(url){return APPS.some(app=>url===new URL('/notification-bridge.html',app.url).href);}
