@@ -15,3 +15,4 @@
 .app-card,.central-guidance,footer{overflow-wrap:anywhere}
 .central-guidance{min-width:0}
 .notification-center-button{max-width:100%;overflow-wrap:anywhere}
+.skip-link{max-width:calc(100% - 32px);overflow-wrap:anywhere}
